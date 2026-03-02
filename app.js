@@ -594,52 +594,71 @@ async function actualizarEstadoCuenta() {
         const consumosTodos = consumosSnapshot.docs.map(doc => doc.data());
         const anticiposTodos = anticiposSnapshot.docs.map(doc => doc.data());
 
-        const consumosHastaFin = consumosTodos.filter(c => {
-            const f = new Date(c.fecha);
-            f.setHours(12, 0, 0, 0);
-            return f <= fechaFin;
-        });
+        // Normalizar fechas de filtro
+        fechaInicio.setHours(0, 0, 0, 0);
+        fechaFin.setHours(23, 59, 59, 999);
 
-        const anticiposHastaFin = anticiposTodos.filter(a => {
+        // 1. Registros ANTES del período → para calcular Saldo Inicial
+        const anticiposAntes = anticiposTodos.filter(a => {
             const f = new Date(a.fecha);
             f.setHours(12, 0, 0, 0);
-            return f <= fechaFin;
+            return f < fechaInicio;
+        });
+        const consumosAntes = consumosTodos.filter(c => {
+            const f = new Date(c.fecha);
+            f.setHours(12, 0, 0, 0);
+            return f < fechaInicio;
         });
 
-        const totalAnticipos = anticiposHastaFin.reduce((sum, a) => sum + a.valor, 0);
-        const totalConsumos = consumosHastaFin.reduce((sum, c) => sum + c.total, 0);
-        const saldo = totalAnticipos - totalConsumos;
+        const saldoInicial =
+            anticiposAntes.reduce((sum, a) => sum + a.valor, 0) -
+            consumosAntes.reduce((sum, c) => sum + c.total, 0);
 
+        // 2. Registros DENTRO del período [fechaInicio, fechaFin]
+        const anticiposRango = anticiposTodos.filter(a => {
+            const f = new Date(a.fecha);
+            f.setHours(12, 0, 0, 0);
+            return f >= fechaInicio && f <= fechaFin;
+        });
+        const consumosRango = consumosTodos.filter(c => {
+            const f = new Date(c.fecha);
+            f.setHours(12, 0, 0, 0);
+            return f >= fechaInicio && f <= fechaFin;
+        });
+
+        const totalAnticipos = anticiposRango.reduce((sum, a) => sum + a.valor, 0);
+        const totalConsumos = consumosRango.reduce((sum, c) => sum + c.total, 0);
+
+        // 3. Saldo Final = Saldo Inicial + movimientos del período
+        const saldo = saldoInicial + totalAnticipos - totalConsumos;
+
+        // Actualizar tarjeta Saldo Inicial
+        const saldoInicialElement = document.getElementById('saldo-inicial');
+        const saldoInicialCard = document.getElementById('saldo-inicial-card');
+        saldoInicialElement.textContent = formatearMoneda(saldoInicial);
+        saldoInicialCard.classList.remove('positive', 'negative');
+        saldoInicialCard.classList.add(saldoInicial >= 0 ? 'positive' : 'negative');
+
+        const fechaInicioStr = fechaInicioInput
+            ? formatearFecha(fechaInicioInput)
+            : formatearFecha(new Date('2000-01-01').toISOString().split('T')[0]);
+        document.getElementById('fecha-saldo-inicial').textContent = `al ${fechaInicioStr}`;
+
+        // Actualizar tarjetas de período
         document.getElementById('total-anticipos').textContent = formatearMoneda(totalAnticipos);
         document.getElementById('total-consumos').textContent = formatearMoneda(totalConsumos);
 
+        // Actualizar tarjeta Saldo Final
         const saldoElement = document.getElementById('saldo');
         const saldoCard = document.getElementById('saldo-card');
-
         saldoElement.textContent = formatearMoneda(saldo);
-        if (saldo >= 0) {
-            saldoCard.classList.remove('negative');
-            saldoCard.classList.add('positive');
-        } else {
-            saldoCard.classList.remove('positive');
-            saldoCard.classList.add('negative');
-        }
+        saldoCard.classList.remove('positive', 'negative');
+        saldoCard.classList.add(saldo >= 0 ? 'positive' : 'negative');
 
         const fechaFinStr = fechaFinInput || formatearFecha(new Date().toISOString().split('T')[0]);
-        document.getElementById('fecha-saldo').textContent = `hasta el ${fechaFinStr}`;
+        document.getElementById('fecha-saldo').textContent = `al ${fechaFinStr}`;
 
-        fechaInicio.setHours(0, 0, 0, 0);
-        const consumosRango = consumosHastaFin.filter(c => {
-            const f = new Date(c.fecha);
-            f.setHours(12, 0, 0, 0);
-            return f >= fechaInicio;
-        });
-        const anticiposRango = anticiposHastaFin.filter(a => {
-            const f = new Date(a.fecha);
-            f.setHours(12, 0, 0, 0);
-            return f >= fechaInicio;
-        });
-
+        // 4. Actualizar tablas de detalle con registros del período
         actualizarTablasDetalleEstadoCuenta(consumosRango, anticiposRango);
 
     } catch (err) {
