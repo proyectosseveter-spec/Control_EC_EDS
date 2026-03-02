@@ -570,6 +570,12 @@ function eliminarAnticipo(docId) {
 
 // --- Funciones para Estado de Cuenta ---
 async function actualizarEstadoCuenta() {
+    // Guarda: si los elementos del DOM no existen, salir sin error
+    if (!document.getElementById('saldo-inicial') ||
+        !document.getElementById('fecha-inicio-filtro')) {
+        return;
+    }
+
     const fechaInicioInput = document.getElementById('fecha-inicio-filtro').value;
     const fechaFinInput = document.getElementById('fecha-fin-filtro').value;
 
