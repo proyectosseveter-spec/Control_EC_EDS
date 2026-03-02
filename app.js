@@ -963,15 +963,12 @@ function generarPDFNativo(tercero) {
     const cardWidth = (contentWidth - cardGap * 3) / 4;
     const cardHeight = 28;
 
-    // Colores según signo del saldo
+    // Calcular signos de saldo para colores
     const saldoInicialNum = parseFloat(saldoInicialText.replace(/[^0-9.-]+/g, ""));
     const saldoNum = parseFloat(saldo.replace(/[^0-9.-]+/g, ""));
-    const colorPos = [39, 174, 96];
-    const colorNeg = [231, 76, 60];
-    const colorNeutro = [0, 0, 0];
 
     // Helper para dibujar cada tarjeta
-    function dibujarTarjeta(titulo, subtitulo, valor, xPos, colorValor) {
+    function dibujarTarjeta(titulo, subtitulo, valor, xPos, r, g, b) {
         pdf.setFillColor(236, 240, 241);
         pdf.roundedRect(xPos, yPos, cardWidth, cardHeight, 2, 2, 'F');
         // Título
@@ -984,25 +981,31 @@ function generarPDFNativo(tercero) {
         }
         // Valor
         pdf.setFont("helvetica", "bold"); pdf.setFontSize(9.5);
-        pdf.setTextColor(...colorValor);
+        pdf.setTextColor(r, g, b);
         pdf.text(valor, xPos + (cardWidth / 2), yPos + 22, { align: "center" });
     }
 
+    // r,g,b positivo=verde, negativo=rojo, neutro=negro
+    const pr = 39, pg = 174, pb = 96;   // verde positivo
+    const nr = 231, ng = 76, nb = 60;   // rojo negativo
+
     dibujarTarjeta("SALDO INICIAL", fechaSaldoInicial, saldoInicialText,
         margin,
-        saldoInicialNum >= 0 ? colorPos : colorNeg);
+        saldoInicialNum >= 0 ? pr : nr,
+        saldoInicialNum >= 0 ? pg : ng,
+        saldoInicialNum >= 0 ? pb : nb);
 
     dibujarTarjeta("TOTAL ANTICIPOS", "En el período", totalAnticipos,
-        margin + (cardWidth + cardGap),
-        colorNeutro);
+        margin + (cardWidth + cardGap), 0, 0, 0);
 
     dibujarTarjeta("TOTAL CONSUMOS", "En el período", totalConsumos,
-        margin + 2 * (cardWidth + cardGap),
-        colorNeutro);
+        margin + 2 * (cardWidth + cardGap), 0, 0, 0);
 
     dibujarTarjeta("SALDO FINAL", fechaSaldo, saldo,
         margin + 3 * (cardWidth + cardGap),
-        saldoNum >= 0 ? colorPos : colorNeg);
+        saldoNum >= 0 ? pr : nr,
+        saldoNum >= 0 ? pg : ng,
+        saldoNum >= 0 ? pb : nb);
 
     yPos += cardHeight + 15;
 
