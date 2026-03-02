@@ -37,7 +37,8 @@
             </form>
             <div class="login-toggle">
                 <span id="login-text">¿No tienes cuenta? <a id="show-register-btn">Regístrate</a></span>
-                <span id="register-text" style="display: none;">¿Ya tienes cuenta? <a id="show-login-btn">Inicia Sesión</a></span>
+                <span id="register-text" style="display: none;">¿Ya tienes cuenta? <a id="show-login-btn">Inicia
+                        Sesión</a></span>
             </div>
         </div>
     </div>
@@ -59,7 +60,8 @@
                         <li><a href="#" class="nav-link" data-target="consumos">Consumos y Facturas</a></li>
                         <li><a href="#" class="nav-link" data-target="anticipos">Anticipos</a></li>
                         <li><a href="#" class="nav-link" data-target="estado-cuenta">Estado de Cuenta</a></li>
-                        <li class="requires-admin" style="display: none;"><a href="#" class="nav-link" data-target="admin">Admin</a></li>
+                        <li class="requires-admin" style="display: none;"><a href="#" class="nav-link"
+                                data-target="admin">Admin</a></li>
                     </ul>
                 </nav>
             </div>
@@ -228,13 +230,15 @@
                         <p class="import-note">
                             El archivo CSV debe tener 4 columnas, separadas por coma (,) y sin encabezado:<br>
                             <strong>NIT_Tercero, Fecha (YYYY-MM-DD), No_Documento, Valor</strong><br>
-                            <em>Nota: Todas las facturas se importarán como "factura" en estado "borrador". El NIT debe existir previamente en la sección "Terceros".</em>
+                            <em>Nota: Todas las facturas se importarán como "factura" en estado "borrador". El NIT debe
+                                existir previamente en la sección "Terceros".</em>
                         </p>
                         <div class="form-group">
                             <label for="csv-facturas-input">Seleccionar archivo CSV</label>
                             <input type="file" id="csv-facturas-input" accept=".csv">
                         </div>
-                        <button id="importar-facturas-btn" class="success" style="width: auto; padding: 0.75rem 1.5rem;">Importar Facturas CSV</button>
+                        <button id="importar-facturas-btn" class="success"
+                            style="width: auto; padding: 0.75rem 1.5rem;">Importar Facturas CSV</button>
                     </div>
 
                     <div class="tercero-selector" style="margin-top: 2rem;">
@@ -270,7 +274,8 @@
 
                 <div class="requires-editor" style="display: none;">
                     <div class="tab-nav" id="anticipos-tab-nav">
-                        <button class="tab-nav-button active" data-target="tab-anticipo-manual">Agregar Anticipo</button>
+                        <button class="tab-nav-button active" data-target="tab-anticipo-manual">Agregar
+                            Anticipo</button>
                         <button class="tab-nav-button" data-target="tab-importar-anticipos">Importar CSV</button>
                     </div>
 
@@ -310,7 +315,8 @@
                             <label for="csv-anticipos-input">Seleccionar archivo CSV</label>
                             <input type="file" id="csv-anticipos-input" accept=".csv">
                         </div>
-                        <button id="importar-anticipos-btn" class="success" style="width: auto; padding: 0.75rem 1.5rem;">Importar Anticipos CSV</button>
+                        <button id="importar-anticipos-btn" class="success"
+                            style="width: auto; padding: 0.75rem 1.5rem;">Importar Anticipos CSV</button>
                     </div>
 
                     <div class="tercero-selector" style="margin-top: 2rem;">
@@ -359,20 +365,25 @@
                 </div>
 
                 <div class="summary-cards">
+                    <div class="card" id="saldo-inicial-card">
+                        <h3>SALDO INICIAL</h3>
+                        <div class="value" id="saldo-inicial">0</div>
+                        <div class="label" id="fecha-saldo-inicial">al [fecha inicio]</div>
+                    </div>
                     <div class="card">
                         <h3>TOTAL ANTICIPOS</h3>
                         <div class="value" id="total-anticipos">0</div>
-                        <div class="label">Acumulado a la fecha</div>
+                        <div class="label" id="label-anticipos">En el período</div>
                     </div>
                     <div class="card">
                         <h3>TOTAL CONSUMOS</h3>
                         <div class="value" id="total-consumos">0</div>
-                        <div class="label">Acumulado a la fecha</div>
+                        <div class="label" id="label-consumos">En el período</div>
                     </div>
                     <div class="card" id="saldo-card">
-                        <h3>SALDO</h3>
+                        <h3>SALDO FINAL</h3>
                         <div class="value" id="saldo">0</div>
-                        <div class="label" id="fecha-saldo">al [fecha]</div>
+                        <div class="label" id="fecha-saldo">al [fecha fin]</div>
                     </div>
                 </div>
 
