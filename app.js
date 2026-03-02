@@ -921,6 +921,8 @@ function generarPDFNativo(tercero) {
     const totalConsumos = document.getElementById('total-consumos').textContent;
     const saldo = document.getElementById('saldo').textContent;
     const fechaSaldo = document.getElementById('fecha-saldo').textContent;
+    const saldoInicialText = document.getElementById('saldo-inicial').textContent;
+    const fechaSaldoInicial = document.getElementById('fecha-saldo-inicial').textContent;
 
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'letter');
@@ -956,34 +958,51 @@ function generarPDFNativo(tercero) {
     pdf.text(`Fecha del estado: ${fechaSaldo}`, pageWidth - margin, yPos, { align: "right" });
     yPos += 15;
 
-    const cardWidth = (contentWidth - 10) / 3;
-    const cardHeight = 25;
+    // 4 tarjetas con 3 separadores de 4mm
+    const cardGap = 4;
+    const cardWidth = (contentWidth - cardGap * 3) / 4;
+    const cardHeight = 28;
 
-    // Tarjeta Anticipos
-    pdf.setFillColor(236, 240, 241);
-    pdf.roundedRect(margin, yPos, cardWidth, cardHeight, 2, 2, 'F');
-    pdf.setFont("helvetica", "bold"); pdf.setFontSize(9); pdf.setTextColor(52, 73, 94);
-    pdf.text("TOTAL ANTICIPOS", margin + (cardWidth / 2), yPos + 7, { align: "center" });
-    pdf.setFontSize(12); pdf.setTextColor(0, 0, 0);
-    pdf.text(totalAnticipos, margin + (cardWidth / 2), yPos + 17, { align: "center" });
-
-    // Tarjeta Consumos
-    pdf.setFillColor(236, 240, 241);
-    pdf.roundedRect(margin + cardWidth + 5, yPos, cardWidth, cardHeight, 2, 2, 'F');
-    pdf.setFont("helvetica", "bold"); pdf.setFontSize(9); pdf.setTextColor(52, 73, 94);
-    pdf.text("TOTAL CONSUMOS", margin + cardWidth + 5 + (cardWidth / 2), yPos + 7, { align: "center" });
-    pdf.setFontSize(12); pdf.setTextColor(0, 0, 0);
-    pdf.text(totalConsumos, margin + cardWidth + 5 + (cardWidth / 2), yPos + 17, { align: "center" });
-
-    // Tarjeta Saldo
-    pdf.setFillColor(236, 240, 241);
-    pdf.roundedRect(margin + (2 * (cardWidth + 5)), yPos, cardWidth, cardHeight, 2, 2, 'F');
-    pdf.setFont("helvetica", "bold"); pdf.setFontSize(9); pdf.setTextColor(52, 73, 94);
-    pdf.text("SALDO", margin + (2 * (cardWidth + 5)) + (cardWidth / 2), yPos + 7, { align: "center" });
-    pdf.setFontSize(12);
+    // Colores según signo del saldo
+    const saldoInicialNum = parseFloat(saldoInicialText.replace(/[^0-9.-]+/g, ""));
     const saldoNum = parseFloat(saldo.replace(/[^0-9.-]+/g, ""));
-    pdf.setTextColor(saldoNum >= 0 ? 39 : 231, saldoNum >= 0 ? 174 : 76, saldoNum >= 0 ? 96 : 60);
-    pdf.text(saldo, margin + (2 * (cardWidth + 5)) + (cardWidth / 2), yPos + 17, { align: "center" });
+    const colorPos = [39, 174, 96];
+    const colorNeg = [231, 76, 60];
+    const colorNeutro = [0, 0, 0];
+
+    // Helper para dibujar cada tarjeta
+    function dibujarTarjeta(titulo, subtitulo, valor, xPos, colorValor) {
+        pdf.setFillColor(236, 240, 241);
+        pdf.roundedRect(xPos, yPos, cardWidth, cardHeight, 2, 2, 'F');
+        // Título
+        pdf.setFont("helvetica", "bold"); pdf.setFontSize(7.5); pdf.setTextColor(52, 73, 94);
+        pdf.text(titulo, xPos + (cardWidth / 2), yPos + 7, { align: "center" });
+        // Subtítulo (fecha)
+        if (subtitulo) {
+            pdf.setFont("helvetica", "normal"); pdf.setFontSize(6); pdf.setTextColor(100, 100, 100);
+            pdf.text(subtitulo, xPos + (cardWidth / 2), yPos + 12, { align: "center" });
+        }
+        // Valor
+        pdf.setFont("helvetica", "bold"); pdf.setFontSize(9.5);
+        pdf.setTextColor(...colorValor);
+        pdf.text(valor, xPos + (cardWidth / 2), yPos + 22, { align: "center" });
+    }
+
+    dibujarTarjeta("SALDO INICIAL", fechaSaldoInicial, saldoInicialText,
+        margin,
+        saldoInicialNum >= 0 ? colorPos : colorNeg);
+
+    dibujarTarjeta("TOTAL ANTICIPOS", "En el período", totalAnticipos,
+        margin + (cardWidth + cardGap),
+        colorNeutro);
+
+    dibujarTarjeta("TOTAL CONSUMOS", "En el período", totalConsumos,
+        margin + 2 * (cardWidth + cardGap),
+        colorNeutro);
+
+    dibujarTarjeta("SALDO FINAL", fechaSaldo, saldo,
+        margin + 3 * (cardWidth + cardGap),
+        saldoNum >= 0 ? colorPos : colorNeg);
 
     yPos += cardHeight + 15;
 
