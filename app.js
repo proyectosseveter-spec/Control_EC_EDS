@@ -38,6 +38,14 @@ let unlistenConsumos = () => { };
 let unlistenAnticipos = () => { };
 let unlistenUsers = () => { };
 
+// Utilidad para prevenir XSS
+function escaparHTML(texto) {
+    if (texto == null) return '';
+    const div = document.createElement('div');
+    div.textContent = texto;
+    return div.innerHTML;
+}
+
 // --- INICIO: Lógica de Autenticación y Roles ---
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -227,8 +235,8 @@ function listenForAdminPanel() {
                     <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin (admin)</option>
                 </select>`;
             tr.innerHTML = `
-                <td>${user.email}</td>
-                <td>${user.role}</td>
+                <td>${escaparHTML(user.email)}</td>
+                <td>${escaparHTML(user.role)}</td>
                 <td>${roleSelect}</td>`;
             tbody.appendChild(tr);
         });
@@ -262,8 +270,8 @@ function listenForTerceros() {
                 actionsHTML = `<td class="actions"><button class="danger" onclick="eliminarTercero('${doc.id}')">Eliminar</button></td>`;
             }
             tr.innerHTML = `
-                <td>${tercero.nit}</td>
-                <td>${tercero.razonSocial}</td>
+                <td>${escaparHTML(tercero.nit)}</td>
+                <td>${escaparHTML(tercero.razonSocial)}</td>
                 ${actionsHTML}`;
             tbody.appendChild(tr);
         });
@@ -377,9 +385,9 @@ function listenForConsumos() {
             }
 
             tr.innerHTML = `
-                <td>${tercero.razonSocial}</td>
+                <td>${escaparHTML(tercero.razonSocial)}</td>
                 <td>${formatearFecha(consumo.fecha)}</td>
-                <td>${noDocumento}</td>
+                <td>${escaparHTML(noDocumento)}</td>
                 <td>${formatearMoneda(consumo.valor)}</td>
                 <td>${formatearMoneda(consumo.retencionRenta)}</td>
                 <td>${formatearMoneda(consumo.retencionICA)}</td>
@@ -531,9 +539,9 @@ function listenForAnticipos() {
             }
 
             tr.innerHTML = `
-                <td>${tercero.razonSocial}</td>
+                <td>${escaparHTML(tercero.razonSocial)}</td>
                 <td>${formatearFecha(anticipo.fecha)}</td>
-                <td>${anticipo.noDocumento}</td>
+                <td>${escaparHTML(anticipo.noDocumento)}</td>
                 <td>${formatearMoneda(anticipo.valor)}</td>
                 ${actionsHTML}`;
             tbody.appendChild(tr);
@@ -681,9 +689,9 @@ function actualizarTablasDetalleEstadoCuenta(consumosFiltrados, anticiposFiltrad
         const tercero = obtenerTerceroPorId(consumo.terceroId);
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${tercero.razonSocial}</td>
+            <td>${escaparHTML(tercero.razonSocial)}</td>
             <td>${formatearFecha(consumo.fecha)}</td>
-            <td>${consumo.noDocumento || '-'}</td>
+            <td>${escaparHTML(consumo.noDocumento || '-')}</td>
             <td>${formatearMoneda(consumo.valor)}</td>
             <td>${formatearMoneda(consumo.retencionRenta)}</td>
             <td>${formatearMoneda(consumo.retencionICA)}</td>
@@ -699,9 +707,9 @@ function actualizarTablasDetalleEstadoCuenta(consumosFiltrados, anticiposFiltrad
         const tercero = obtenerTerceroPorId(anticipo.terceroId);
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${tercero.razonSocial}</td>
+            <td>${escaparHTML(tercero.razonSocial)}</td>
             <td>${formatearFecha(anticipo.fecha)}</td>
-            <td>${anticipo.noDocumento}</td>
+            <td>${escaparHTML(anticipo.noDocumento)}</td>
             <td>${formatearMoneda(anticipo.valor)}</td>`;
         tbodyAnticipos.appendChild(tr);
     });
