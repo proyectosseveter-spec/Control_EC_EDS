@@ -377,7 +377,10 @@ function listenForConsumos() {
 
             let accionesHTML = '';
             if (showActions) {
-                let actionsContent = `<button class="danger" onclick="eliminarConsumo('${doc.id}')">Eliminar</button>`;
+                let actionsContent = '';
+                if (puedeEliminar(consumo.fecha)) {
+                    actionsContent += `<button class="danger" onclick="eliminarConsumo('${doc.id}', '${consumo.fecha}')">Eliminar</button>`;
+                }
                 if (consumo.tipo === 'factura' && consumo.estado === 'borrador') {
                     actionsContent += `<button class="success" onclick="completarFactura('${doc.id}')">Completar</button>`;
                 }
@@ -506,7 +509,11 @@ function completarFactura(docId) {
         .catch(err => { mostrarAlerta('consumos-alert', 'error', 'Error al completar factura.'); });
 }
 
-function eliminarConsumo(docId) {
+function eliminarConsumo(docId, fecha) {
+    if (!puedeEliminar(fecha)) {
+        mostrarAlerta('consumos-alert', 'error', 'No tiene permisos para eliminar registros de meses anteriores.');
+        return;
+    }
     if (confirm('¿Está seguro de que desea eliminar este registro?')) {
         db.collection('consumos').doc(docId).delete()
             .then(() => { mostrarAlerta('consumos-alert', 'success', 'Registro eliminado.'); })
@@ -535,7 +542,11 @@ function listenForAnticipos() {
 
             let actionsHTML = '';
             if (showActions) {
-                actionsHTML = `<td class="actions"><button class="danger" onclick="eliminarAnticipo('${doc.id}')">Eliminar</button></td>`;
+                let actionsContent = '';
+                if (puedeEliminar(anticipo.fecha)) {
+                    actionsContent = `<button class="danger" onclick="eliminarAnticipo('${doc.id}', '${anticipo.fecha}')">Eliminar</button>`;
+                }
+                actionsHTML = `<td class="actions">${actionsContent}</td>`;
             }
 
             tr.innerHTML = `
@@ -568,7 +579,11 @@ function agregarAnticipo(e) {
         .catch(err => { mostrarAlerta('anticipos-alert', 'error', 'Error al agregar anticipo.'); });
 }
 
-function eliminarAnticipo(docId) {
+function eliminarAnticipo(docId, fecha) {
+    if (!puedeEliminar(fecha)) {
+        mostrarAlerta('anticipos-alert', 'error', 'No tiene permisos para eliminar registros de meses anteriores.');
+        return;
+    }
     if (confirm('¿Está seguro de que desea eliminar este anticipo?')) {
         db.collection('anticipos').doc(docId).delete()
             .then(() => { mostrarAlerta('anticipos-alert', 'success', 'Anticipo eliminado.'); })
@@ -902,6 +917,26 @@ function formatearFecha(fecha) {
     const d = new Date(fecha);
     d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
     return d.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function puedeEliminar(fechaStr) {
+    if (currentUserRole === 'admin') return true;
+    if (!fechaStr) return true;
+    
+    const partes = fechaStr.split('-');
+    if (partes.length < 2) return true;
+
+    const elementYear = parseInt(partes[0], 10);
+    const elementMonth = parseInt(partes[1], 10) - 1;
+    
+    const hoy = new Date();
+    const currentYear = hoy.getFullYear();
+    const currentMonth = hoy.getMonth();
+    
+    if (elementYear < currentYear || (elementYear === currentYear && elementMonth < currentMonth)) {
+        return false;
+    }
+    return true;
 }
 
 function mostrarAlerta(contenedorId, tipo, mensaje) {
